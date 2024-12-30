@@ -92,8 +92,15 @@ namespace Rusty.Graphs
         }
 
         /* Private methods. */
-        private static string ToString(RootNode<DataT> node)
+        private static string ToString(RootNode<DataT> node, HashSet<Node<DataT>> examined = null)
         {
+            if (examined == null)
+                examined = new();
+
+            // Detect cycles.
+            if (examined.Contains(node))
+                return $"({node.Name})";
+
             // Base stringify.
             string str = ToString(node as Node<DataT>);
 
@@ -110,8 +117,13 @@ namespace Rusty.Graphs
             return str;
         }
 
-        private static string ToString(Node<DataT> node)
+        private static string ToString(Node<DataT> node, HashSet<Node<DataT>> examined = null)
         {
+            // Detect cycles.
+            if (examined.Contains(node))
+                return $"({node.Name})";
+            examined.Add(node);
+
             // Stringify node.
             string str = node.Name;
 
