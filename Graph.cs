@@ -5,7 +5,7 @@ namespace Rusty.Graphs
     /// <summary>
     /// A container for nodes.
     /// </summary>
-    public abstract class Graph<DataT> where DataT : new()
+    public class Graph<DataT> where DataT : new()
     {
         /* Public properties. */
         public string Name { get; set; }
@@ -19,7 +19,7 @@ namespace Rusty.Graphs
             {
                 if (i > 0)
                     str += "\n";
-                str += ToString(Nodes[i]);
+                str += Nodes[i];
             }
             return str;
         }
@@ -27,10 +27,23 @@ namespace Rusty.Graphs
         /// <summary>
         /// Create a new node, add it to the graph, and return the node.
         /// </summary>
-        public RootNode<DataT> CreateNode()
+        public RootNode<DataT> AddNode()
+        {
+            return AddNode("");
+        }
+
+        /// <summary>
+        /// Create a new node, add it to the graph, and return the node.
+        /// </summary>
+        public RootNode<DataT> AddNode(string name)
+        {
+            return AddNode(name, new());
+        }
+
+        public RootNode<DataT> AddNode(string name, DataT data)
         {
             // Create a new node.
-            RootNode<DataT> newNode = new();
+            RootNode<DataT> newNode = new(name, data);
 
             // Add the node.
             AddNode(newNode);
@@ -44,6 +57,9 @@ namespace Rusty.Graphs
         /// </summary>
         public void AddNode(RootNode<DataT> node)
         {
+            if (node == null)
+                return;
+
             // Remove the node from its old graph.
             node.Remove();
 
@@ -91,83 +107,16 @@ namespace Rusty.Graphs
             oldNode.Graph = null;
         }
 
-        /* Private methods. */
-        private static string ToString(RootNode<DataT> node, HashSet<Node<DataT>> examined = null)
+        /// <summary>
+        /// Transfer all the nodes of another graph to this one.
+        /// </summary>
+        public void Consume(Graph<DataT> other)
         {
-            if (examined == null)
-                examined = new();
-
-            // Detect cycles.
-            if (examined.Contains(node))
-                return $"({node.Name})";
-
-            // Base stringify.
-            string str = ToString(node as Node<DataT>);
-
-            // Enclose in borders.
-            int width = GetWidth(str);
-            str = '|' + str.Replace("\n", "│\n│") + '|';
-            str = '┌' + new string('─', width) + '┐';
-            str = '└' + new string('─', width) + '┘';
-
-            // Add title line.
-            if (node.Children.Count > 0)
-                str.Insert(str.IndexOf('\n') + 1, '├' + new string('─', GetWidth(str)) + '┤');
-
-            return str;
-        }
-
-        private static string ToString(Node<DataT> node, HashSet<Node<DataT>> examined = null)
-        {
-            // Detect cycles.
-            if (examined.Contains(node))
-                return $"({node.Name})";
-            examined.Add(node);
-
-            // Stringify node.
-            string str = node.Name;
-
-            // Stringify children.
-            for (int i = 0; i < node.Children.Count; i++)
+            for (int i = 0; i < other.Nodes.Count; i++)
             {
-                string childStr = ToString(node.Children[i]);
-
-                if (i == node.Children.Count - 1)
-                    childStr = '└' + childStr;
-                else
-                    childStr = '├' + childStr;
-
-                if (i < node.Children.Count - 2)
-                    childStr = childStr.Replace("\n", "\n│");
-
-                str += '\n' + childStr;
+                other.Nodes[i].Graph = this;
             }
-
-            return str;
-        }
-
-        private static int GetWidth(string str)
-        {
-            if (!str.Contains('\n'))
-                return str.Length;
-
-            string[] substrs = str.Split('\n');
-            int width = 0;
-            foreach (string substr in substrs)
-            {
-                if (substr.Length > width)
-                    width = substr.Length;
-            }
-            return width;
-        }
-
-        private static int GetHeight(string str)
-        {
-            int count = 0;
-            for (int i = 0; i < str.Length; i++)
-                if (str[i] == '\n')
-                    count++;
-            return count;
+            other.Nodes.Clear();
         }
     }
 }

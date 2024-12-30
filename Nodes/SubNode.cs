@@ -83,9 +83,11 @@ namespace Rusty.Graphs
         /* Constructors. */
         public SubNode() : base() { }
 
-        public SubNode(DataT data) : base(data) { }
+        public SubNode(string name) : base(name) { }
 
-        public SubNode(DataT data, List<SubNode<DataT>> children) : base(data, children) { }
+        public SubNode(string name, DataT data) : base(name, data) { }
+
+        public SubNode(string name, DataT data, List<SubNode<DataT>> children) : base(name, data, children) { }
 
         /* Public methods. */
         /// <summary>
