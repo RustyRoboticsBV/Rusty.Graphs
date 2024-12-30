@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Rusty.Graphs
+﻿namespace Rusty.Graphs
 {
     /// <summary>
     /// A top-level node. Can have inputs and outputs, and can contain sub-nodes.
@@ -9,11 +7,11 @@ namespace Rusty.Graphs
         where DataT : new()
     {
         /* Public properties. */
+        public string Name { get; set; }
         public RootNode<DataT> Owner { get; internal set; }
-        public List<(string, object)> Attributes { get; } = new();
 
         /* Constructors. */
-        public Port() : base() { }
+        public Port() { }
 
         /* Public methods. */
         /// <summary>
