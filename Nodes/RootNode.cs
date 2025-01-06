@@ -116,7 +116,7 @@ namespace Rusty.Graphs
             }
 
             // Remove this node from its graph.
-            if (Graph != null && Graph.Nodes.Contains(this)))
+            if (Graph != null && Graph.Nodes.Contains(this))
                 Graph.Nodes.Remove(this);
             Graph = null;
         }
