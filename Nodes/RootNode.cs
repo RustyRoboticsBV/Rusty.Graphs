@@ -116,15 +116,9 @@ namespace Rusty.Graphs
             }
 
             // Remove this node from its graph.
-            if (Graph != null)
-            {
-                try
-                {
-                    Graph.Nodes.Remove(this);
-                }
-                catch { }
-                Graph = null;
-            }
+            if (Graph != null && Graph.Nodes.Contains(this)))
+                Graph.Nodes.Remove(this);
+            Graph = null;
         }
 
         public override void Dissolve()

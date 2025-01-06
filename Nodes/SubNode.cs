@@ -95,7 +95,7 @@ namespace Rusty.Graphs
         /// </summary>
         public override void Remove()
         {
-            if (Parent.Children.Contains(this))
+            if (Parent != null && Parent.Children.Contains(this))
                 Parent.Children.Remove(this);
         }
 
