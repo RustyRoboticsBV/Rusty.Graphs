@@ -11,6 +11,14 @@
         /// The target input port that this output is connected to.
         /// </summary>
         public InputPort<DataT> To { get; internal set; }
+        /// <summary>
+        /// The node to whose input port this output port is connected to.
+        /// </summary>
+        public RootNode<DataT> ToNode => To != null ? To.Owner : null;
+        /// <summary>
+        /// The index of the target input port that this output is connected to, inside its owner node's list of inputs.
+        /// </summary>
+        public int ToPortIndex => ToNode != null ? ToNode.Inputs.IndexOf(To) : -1;
 
         /* Constructors. */
         public OutputPort() : base() { }
@@ -40,6 +48,22 @@
             To = inputPort;
             if (inputPort != null)
                 inputPort.From = this;
+        }
+
+        /// <summary>
+        /// Connect this output port to a newly-created input port on the target node. Does nothing if the output has already
+        /// been connected to this node.
+        /// </summary>
+        public void ConnectTo(RootNode<DataT> toNode)
+        {
+            if (To == null || To.Owner == null || To.Owner == toNode)
+                return;
+
+            InputPort<DataT> input = new();
+            input.Owner = toNode;
+            toNode.Inputs.Add(input);
+
+            ConnectTo(input);
         }
     }
 }

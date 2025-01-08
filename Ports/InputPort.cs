@@ -11,6 +11,14 @@
         /// The source output port that this input is connected to.
         /// </summary>
         public OutputPort<DataT> From { get; internal set; }
+        /// <summary>
+        /// The node to whose output port this input port is connected to.
+        /// </summary>
+        public RootNode<DataT> FromNode => From != null ? From.Owner : null;
+        /// <summary>
+        /// The index of the target output port that this input is connected to, inside its owner node's list of outputs.
+        /// </summary>
+        public int FromPortIndex => FromNode != null ? FromNode.Outputs.IndexOf(From) : -1;
 
         /* Constructors. */
         public InputPort() : base() { }

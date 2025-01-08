@@ -21,6 +21,8 @@ namespace Rusty.Graphs
 
         public RootNode(string name, DataT data) : base(name, data) { }
 
+        public RootNode(DataT data) : this(data.ToString(), data) { }
+
         /* Casting operators. */
         public static implicit operator SubNode<DataT>(RootNode<DataT> rootNode)
         {
@@ -105,20 +107,9 @@ namespace Rusty.Graphs
 
         public override void Remove()
         {
-            // Remove the input and output ports.
-            for (int i = 0; i < Inputs.Count; i++)
-            {
-                Inputs[i].Remove();
-            }
-            for (int i = 0; i < Outputs.Count; i++)
-            {
-                Outputs[i].Remove();
-            }
-
-            // Remove this node from its graph.
-            if (Graph != null && Graph.Nodes.Contains(this))
-                Graph.Nodes.Remove(this);
-            Graph = null;
+            Disconnect();
+            if (Graph != null && Graph.ContainsNode(this))
+                Graph.RemoveNode(this);
         }
 
         public override void Dissolve()
@@ -193,6 +184,21 @@ namespace Rusty.Graphs
 
             // Connect the two.
             output.ConnectTo(input);
+        }
+
+        /// <summary>
+        /// Disconnect this node from all its inputs and outputs.
+        /// </summary>
+        public void Disconnect()
+        {
+            for (int i = 0; i < Inputs.Count; i++)
+            {
+                Inputs[i].Remove();
+            }
+            for (int i = 0; i < Outputs.Count; i++)
+            {
+                Outputs[i].Remove();
+            }
         }
 
         /* Private methods. */

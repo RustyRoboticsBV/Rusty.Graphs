@@ -89,6 +89,10 @@ namespace Rusty.Graphs
 
         public SubNode(string name, DataT data, List<SubNode<DataT>> children) : base(name, data, children) { }
 
+        public SubNode(DataT data) : base("", data) { }
+
+        public SubNode(DataT data, List<SubNode<DataT>> children) : base("", data, children) { }
+
         /* Public methods. */
         /// <summary>
         /// Removes the sub-node and all of its children from the graph.

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Rusty.CutsceneEditor.Compiler;
+using System.Collections.Generic;
 
 namespace Rusty.Graphs
 {
@@ -9,19 +10,31 @@ namespace Rusty.Graphs
     {
         /* Public properties. */
         public string Name { get; set; }
-        public List<RootNode<DataT>> Nodes { get; } = new();
+        public DataT Data { get; set; } = new();
+        public int Count => Nodes.Count;
+
+        /* Private properties. */
+        private List<RootNode<DataT>> Nodes { get; } = new();
+        private Dictionary<RootNode<DataT>, int> Lookup { get; } = new();
+
+        /* Indexers. */
+        public RootNode<DataT> this[int index] => Nodes[index];
 
         /* Public methods. */
-        public override string ToString()
+        /// <summary>
+        /// Check if this graph contains a node.
+        /// </summary>
+        public bool ContainsNode(RootNode<DataT> node)
         {
-            string str = "";
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                if (i > 0)
-                    str += "\n";
-                str += Nodes[i];
-            }
-            return str;
+            return Lookup.ContainsKey(node);
+        }
+
+        /// <summary>
+        /// Return the index of a node.
+        /// </summary>
+        public int IndexOfNode(RootNode<DataT> node)
+        {
+            return Lookup[node];
         }
 
         /// <summary>
@@ -40,6 +53,9 @@ namespace Rusty.Graphs
             return AddNode(name, new());
         }
 
+        /// <summary>
+        /// Create a new node, add it to the graph, and return the node.
+        /// </summary>
         public RootNode<DataT> AddNode(string name, DataT data)
         {
             // Create a new node.
@@ -64,6 +80,7 @@ namespace Rusty.Graphs
             node.Remove();
 
             // Add the node to this graph.
+            Lookup.Add(node, Nodes.Count);
             Nodes.Add(node);
             node.Graph = this;
         }
@@ -73,50 +90,88 @@ namespace Rusty.Graphs
         /// </summary>
         public void RemoveNode(RootNode<DataT> node)
         {
-            node.Remove();
+            Lookup.Remove(node);
+            Nodes.Remove(node);
+            node.Graph = null;
         }
 
         /// <summary>
-        /// Replace a node in the graph.
+        /// Find and return the indices of all start nodes in the graph. This will include all nodes without a precursor. Cycles
+        /// with no clear start node will arbitrarily get one of their nodes marked as a start node.
         /// </summary>
-        public void ReplaceNode(RootNode<DataT> oldNode, RootNode<DataT> newNode)
+        public int[] FindStartNodes()
         {
-            // Transfer input/output ports.
-            while (oldNode.Inputs.Count > 0)
+            // Initialize start nodes list and visited array.
+            List<int> startNodes = new List<int>();
+            bool[] visited = new bool[Count];
+
+            // Find non-cycle start nodes.
+            for (int i = 0; i < Count; i++)
             {
-                InputPort<DataT> input = oldNode.Inputs[0];
-                oldNode.Inputs.RemoveAt(0);
+                RootNode<DataT> node = Nodes[i];
 
-                newNode.Inputs.Add(input);
-                input.Owner = newNode;
+                // Check if this node has at least one precursor node.
+                bool hasPrecursor = false;
+                for (int j = 0; j < node.Inputs.Count; j++)
+                {
+                    if (node.Inputs[j].FromNode != null)
+                    {
+                        hasPrecursor = true;
+                        break;
+                    }
+                }
+
+                // If we had no precursors, we are a start node.
+                if (!hasPrecursor)
+                {
+                    // Add to start nodes.
+                    startNodes.Add(i);
+
+                    // Recursively mark this and all succursor nodes as "visited".
+                    MarkSubgraphAsVisited(visited, i);
+                }
             }
-            while (oldNode.Outputs.Count > 0)
+
+            // All non-visited nodes start in a cycle with no clear start node.
+            // Mark the lowest-index ones of each cycle.
+            for (int i = 0; i < Count; i++)
             {
-                OutputPort<DataT> output = oldNode.Outputs[0];
-                oldNode.Outputs.RemoveAt(0);
+                // If this node hasn't been visited yet, it is a start node.
+                if (!visited[i])
+                {
+                    // Add to start nodes.
+                    startNodes.Add(i);
 
-                newNode.Outputs.Add(output);
-                output.Owner = newNode;
+                    // Recursively mark this and all succursor nodes as "visited".
+                    MarkSubgraphAsVisited(visited, i);
+                }
             }
 
-            // Replace node in graph.
-            int index = Nodes.IndexOf(oldNode);
-            if (index != -1)
-                Nodes[index] = newNode;
-            newNode.Graph = this;
-            oldNode.Graph = null;
+            // Return found start nodes.
+            return startNodes.ToArray();
         }
 
+        /* Private methods. */
         /// <summary>
-        /// Transfer all the nodes of another graph to this one.
+        /// Mark a node and recursively mark its successor nodes.
         /// </summary>
-        public void Consume(Graph<DataT> other)
+        private void MarkSubgraphAsVisited(bool[] visited, int currentNodeIndex)
         {
-            for (int i = 0; i < other.Nodes.Count; i++)
+            // Mark as visited.
+            visited[currentNodeIndex] = true;
+
+            // Mark successor nodes.
+            RootNode<DataT> currentNode = Nodes[currentNodeIndex];
+            for (int i = 0; i < currentNode.Outputs.Count; i++)
             {
-                other.Nodes[i].Graph = this;
+                RootNode<DataT> toNode = currentNode.Outputs[i].ToNode;
+                if (currentNode != null)
+                {
+                    int toIndex = IndexOfNode(toNode);
+                    if (!visited[toIndex])
+                        MarkSubgraphAsVisited(visited, toIndex);
+                }
             }
-            other.Nodes.Clear();
         }
     }
 }
