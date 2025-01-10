@@ -6,7 +6,7 @@ namespace Rusty.Graphs
     /// A node that can be contained within another node. Has no inputs/outputs, but can have sub-nodes of its own.
     /// </summary>
     public class SubNode<DataT> : Node<DataT>
-        where DataT : new()
+        where DataT : NodeData, new()
     {
         /* Public properties. */
         public Node<DataT> Parent { get; internal set; }
@@ -45,53 +45,12 @@ namespace Rusty.Graphs
             }
         }
 
-        /// <summary>
-        /// Whether or not this sub-node is the first child of its parent.
-        /// </summary>
-        public bool IsFirstChild
-        {
-            get
-            {
-                try
-                {
-                    return Parent.Children[0] == this;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-        }
-        /// <summary>
-        /// Whether or not this sub-node is the last child of its parent.
-        /// </summary>
-        public bool IsLastChild
-        {
-            get
-            {
-                try
-                {
-                    return Parent.Children[^1] == this;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-        }
-
         /* Constructors. */
         public SubNode() : base() { }
 
-        public SubNode(string name) : base(name) { }
+        public SubNode(DataT data) : base(data) { }
 
-        public SubNode(string name, DataT data) : base(name, data) { }
-
-        public SubNode(string name, DataT data, List<SubNode<DataT>> children) : base(name, data, children) { }
-
-        public SubNode(DataT data) : base("", data) { }
-
-        public SubNode(DataT data, List<SubNode<DataT>> children) : base("", data, children) { }
+        public SubNode(DataT data, List<SubNode<DataT>> children) : base(data, children) { }
 
         /* Public methods. */
         /// <summary>

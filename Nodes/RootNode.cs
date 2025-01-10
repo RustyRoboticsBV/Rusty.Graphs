@@ -7,7 +7,7 @@ namespace Rusty.Graphs
     /// within a node itself.
     /// </summary>
     public class RootNode<DataT> : Node<DataT>
-        where DataT : new()
+        where DataT : NodeData, new()
     {
         /* Public properties. */
         public override Graph<DataT> Graph { get; internal set; }
@@ -17,20 +17,31 @@ namespace Rusty.Graphs
         /* Constructors. */
         public RootNode() : base() { }
 
-        public RootNode(string name) : base(name) { }
-
-        public RootNode(string name, DataT data) : base(name, data) { }
-
-        public RootNode(DataT data) : this(data.ToString(), data) { }
+        public RootNode(DataT data) : base(data) { }
 
         /* Casting operators. */
         public static implicit operator SubNode<DataT>(RootNode<DataT> rootNode)
         {
-            return new(rootNode.Name, rootNode.Data, rootNode.Children);
+            return new(rootNode.Data, rootNode.Children);
         }
 
         /* Public methods. */
+        public override string ToString()
+        {
+            return ToString(new HashSet<Node<DataT>>(), false);
+        }
+
         public override string ToString(HashSet<Node<DataT>> examined)
+        {
+            return ToString(examined, false);
+        }
+
+        public string ToString(bool includeOutputs)
+        {
+            return ToString(new HashSet<Node<DataT>>(), includeOutputs);
+        }
+
+        public string ToString(HashSet<Node<DataT>> examined, bool includeOutputs)
         {
             string str = "";
             int width = 0;
@@ -39,7 +50,7 @@ namespace Rusty.Graphs
             bool examinedAlready = examined.Contains(this);
             if (examinedAlready)
             {
-                str = $"({Name}...)";
+                str = $"({GetName()}...)";
                 width = str.Length;
             }
 
@@ -76,30 +87,33 @@ namespace Rusty.Graphs
                 str = str.Insert(width * 2 + 6, '├' + new string('─', width) + '┤' + '\n');
 
             // Handle outputs.
-            if (Outputs.Count > 0)
-                str = str.Replace("└─", "└┬");
-            for (int i = 0; i < Outputs.Count; i++)
+            if (includeOutputs)
             {
-                InputPort<DataT> to = Outputs[i].To;
-                string childStr = "";
-                if (to == null || to.Owner == null)
-                    childStr = "(null)";
-                else
-                    childStr = Outputs[i].To.Owner.ToString(examined);
+                // Add bottom connector.
+                if (Outputs.Count > 0)
+                    str = str.Replace("└─", "└┬");
 
-                if (i < Outputs.Count - 1)
+                // Alter output of output node to connect and indent it.
+                for (int i = 0; i < Outputs.Count; i++)
                 {
-                    childStr = ReplaceFirst(childStr, "\n│", "\n├┤");
-                    childStr = childStr.Replace("│\n", "│\n│");
-                }
-                else
-                {
-                    childStr = ReplaceFirst(childStr, "│", "└┤");
-                    childStr = childStr.Replace("│\n", "│\n ");
-                }
-                childStr = " │" + childStr.Replace("\n", "\n ");
+                    InputPort<DataT> to = Outputs[i].To;
+                    string childStr = "";
+                    if (to == null || to.Owner == null)
+                        childStr = "(null)";
+                    else
+                        childStr = Outputs[i].To.Owner.ToString(examined, true);
 
-                str += '\n' + childStr;
+                    childStr = " │" + childStr.Replace("\n", "\n  ");
+                    if (i < Outputs.Count - 1)
+                    {
+                        childStr = ReplaceFirst(childStr, "\n  │", "\n ├┤");
+                        childStr = childStr.Replace("\n  ", "\n │");
+                    }
+                    else
+                        childStr = ReplaceFirst(childStr, "\n  │", "\n └┤");
+
+                    str += '\n' + childStr;
+                }
             }
 
             return str;
@@ -156,11 +170,11 @@ namespace Rusty.Graphs
             // Ensure output & input ports.
             while (Outputs.Count <= outputPortIndex)
             {
-                Outputs.Add(new());
+                Outputs.Add(new OutputPort<DataT>());
             }
             while (toNode.Inputs.Count <= inputPortIndex)
             {
-                toNode.Inputs.Add(new());
+                toNode.Inputs.Add(new InputPort<DataT>());
             }
 
             // Connect ports.
@@ -173,17 +187,20 @@ namespace Rusty.Graphs
         public void ConnectTo(RootNode<DataT> toNode)
         {
             // Create start port.
-            OutputPort<DataT> output = new();
+            OutputPort<DataT> output = new OutputPort<DataT>();
             Outputs.Add(output);
             output.Owner = this;
 
-            // Create end port.
-            InputPort<DataT> input = new();
-            toNode.Inputs.Add(input);
-            input.Owner = toNode;
+            if (toNode != null)
+            {
+                // Create end port.
+                InputPort<DataT> input = new InputPort<DataT>();
+                toNode.Inputs.Add(input);
+                input.Owner = toNode;
 
-            // Connect the two.
-            output.ConnectTo(input);
+                // Connect the two.
+                output.ConnectTo(input);
+            }
         }
 
         /// <summary>

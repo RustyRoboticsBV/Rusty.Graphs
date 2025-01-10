@@ -5,10 +5,9 @@ namespace Rusty.Graphs
     /// <summary>
     /// The base class for all nodes.
     /// </summary>
-    public abstract class Node<DataT> where DataT : new()
+    public abstract class Node<DataT> where DataT : NodeData, new()
     {
         /* Public properties. */
-        public string Name { get; set; }
         public DataT Data { get; set; }
 
         /// <summary>
@@ -21,38 +20,33 @@ namespace Rusty.Graphs
         public List<SubNode<DataT>> Children { get; } = new();
 
         /* Constructors. */
-        public Node() : this("", new DataT()) { }
+        public Node() : this(new DataT()) { }
 
-        public Node(string name)
-        {
-            Name = name;
-        }
-
-        public Node(string name, DataT data) : this(name)
+        public Node(DataT data)
         {
             Data = data;
         }
 
-        public Node(string name, DataT data, List<SubNode<DataT>> children) : this(name, data)
+        public Node(DataT data, List<SubNode<DataT>> children) : this(data)
         {
-            Children = new(children);
+            Children = new List<SubNode<DataT>>(children);
         }
 
         /* Public methods. */
         public override string ToString()
         {
-            return ToString(new());
+            return ToString(new HashSet<Node<DataT>>());
         }
 
         public virtual string ToString(HashSet<Node<DataT>> examined)
         {
             // Detect cycles.
             if (examined.Contains(this))
-                return $"({Name}...)";
+                return $"({GetName()}...)";
             examined.Add(this);
 
             // Stringify this node.
-            string str = Name;
+            string str = GetName();
 
             // Stringify children.
             for (int i = 0; i < Children.Count; i++)
@@ -74,6 +68,14 @@ namespace Rusty.Graphs
             }
 
             return str;
+        }
+
+        /// <summary>
+        /// Get the name of the node. By default, this converts the data to a string and returns the result.
+        /// </summary>
+        public virtual string GetName()
+        {
+            return Data.ToString();
         }
 
         /// <summary>

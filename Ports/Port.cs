@@ -4,7 +4,7 @@
     /// A top-level node. Can have inputs and outputs, and can contain sub-nodes.
     /// </summary>
     public abstract class Port<DataT>
-        where DataT : new()
+        where DataT : NodeData, new()
     {
         /* Public properties. */
         public string Name { get; set; }

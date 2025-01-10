@@ -5,10 +5,9 @@ namespace Rusty.Graphs
     /// <summary>
     /// A container for nodes.
     /// </summary>
-    public class Graph<DataT> where DataT : new()
+    public class Graph<DataT> where DataT : NodeData, new()
     {
         /* Public properties. */
-        public string Name { get; set; }
         public DataT Data { get; set; } = new();
         public int Count => Nodes.Count;
 
@@ -33,7 +32,14 @@ namespace Rusty.Graphs
         /// </summary>
         public int IndexOfNode(RootNode<DataT> node)
         {
-            return Lookup[node];
+            try
+            {
+                return Lookup[node];
+            }
+            catch
+            {
+                return -1;
+            }
         }
 
         /// <summary>
@@ -41,30 +47,14 @@ namespace Rusty.Graphs
         /// </summary>
         public RootNode<DataT> AddNode()
         {
-            return AddNode("");
-        }
-
-        /// <summary>
-        /// Create a new node, add it to the graph, and return the node.
-        /// </summary>
-        public RootNode<DataT> AddNode(string name)
-        {
-            return AddNode(name, new());
-        }
-
-        /// <summary>
-        /// Create a new node, add it to the graph, and return the node.
-        /// </summary>
-        public RootNode<DataT> AddNode(string name, DataT data)
-        {
-            // Create a new node.
-            RootNode<DataT> newNode = new(name, data);
+            // Create a node.
+            RootNode<DataT> node = CreateNode(new());
 
             // Add the node.
-            AddNode(newNode);
+            AddNode(node);
 
             // Return the result.
-            return newNode;
+            return node;
         }
 
         /// <summary>
@@ -150,6 +140,15 @@ namespace Rusty.Graphs
             return startNodes.ToArray();
         }
 
+        /* Protected methods. */
+        /// <summary>
+        /// Create a new root node.
+        /// </summary>
+        protected virtual RootNode<DataT> CreateNode(DataT data)
+        {
+            return new RootNode<DataT>(data);
+        }
+
         /* Private methods. */
         /// <summary>
         /// Mark a node and recursively mark its successor nodes.
@@ -167,7 +166,7 @@ namespace Rusty.Graphs
                 if (currentNode != null)
                 {
                     int toIndex = IndexOfNode(toNode);
-                    if (!visited[toIndex])
+                    if (toIndex != -1 && !visited[toIndex])
                         MarkSubgraphAsVisited(visited, toIndex);
                 }
             }

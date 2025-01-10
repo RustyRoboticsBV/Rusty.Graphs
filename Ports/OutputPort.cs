@@ -4,7 +4,7 @@
     /// A top-level node. Can have inputs and outputs, and can contain sub-nodes.
     /// </summary>
     public class OutputPort<DataT> : Port<DataT>
-        where DataT : new()
+        where DataT : NodeData, new()
     {
         /* Public properties. */
         /// <summary>
@@ -26,7 +26,9 @@
         /* Public methods. */
         public sealed override void Remove()
         {
-            Owner.Outputs.Remove(this);
+            Disconnect();
+            if (Owner != null)
+                Owner.Outputs.Remove(this);
         }
 
         public sealed override void Disconnect()
@@ -56,10 +58,10 @@
         /// </summary>
         public void ConnectTo(RootNode<DataT> toNode)
         {
-            if (To == null || To.Owner == null || To.Owner == toNode)
+            if (To != null && To.Owner == toNode)
                 return;
 
-            InputPort<DataT> input = new();
+            InputPort<DataT> input = new InputPort<DataT>();
             input.Owner = toNode;
             toNode.Inputs.Add(input);
 
