@@ -19,6 +19,22 @@ namespace Rusty.Graphs
         public RootNode<DataT> this[int index] => Nodes[index];
 
         /* Public methods. */
+        public override string ToString()
+        {
+            string str = "";
+            int[] startNodes = FindStartNodes();
+            HashSet<Node<DataT>> handled = new();
+            for (int i = 0; i < startNodes.Length; i++)
+            {
+                int nodeIndex = startNodes[i];
+                if (str != "")
+                    str += '\n';
+                if (!handled.Contains(Nodes[nodeIndex]))
+                    str += Nodes[nodeIndex].ToString(handled, true);
+            }
+            return str;
+        }
+
         /// <summary>
         /// Check if this graph contains a node.
         /// </summary>
