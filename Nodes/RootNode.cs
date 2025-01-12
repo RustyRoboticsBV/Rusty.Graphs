@@ -19,10 +19,23 @@ namespace Rusty.Graphs
 
         public RootNode(DataT data) : base(data) { }
 
+        public RootNode(SubNode<DataT> node) : this(node.Data)
+        {
+            while (node.Children.Count > 0)
+            {
+                AddChild(node.Children[0]);
+            }
+        }
+
         /* Casting operators. */
         public static implicit operator SubNode<DataT>(RootNode<DataT> rootNode)
         {
-            return new(rootNode.Data, rootNode.Children);
+            return new SubNode<DataT>(rootNode.Data, rootNode.Children);
+        }
+
+        public static implicit operator RootNode<DataT>(SubNode<DataT> subNode)
+        {
+            return new RootNode<DataT>(subNode);
         }
 
         /* Public methods. */
