@@ -113,5 +113,18 @@ namespace Rusty.Graphs
             Children.Add(subNode);
             subNode.Parent = this;
         }
+
+        /// <summary>
+        /// Add an array of child nodes. This removes the sub-node(s) from their old parent(s).
+        /// </summary>
+        public void AddChildren(SubNode<DataT>[] subNodes)
+        {
+            if (subNodes == null)
+                return;
+            for (int i = 0; i < subNodes.Length; i++)
+            {
+                AddChild(subNodes[i]);
+            }
+        }
     }
 }
