@@ -13,7 +13,7 @@ namespace Rusty.Graphs
 
         /* Private properties. */
         private List<RootNode<DataT>> Nodes { get; } = new();
-        private Dictionary<RootNode<DataT>, int> Lookup { get; } = new();
+        private Dictionary<RootNode<DataT>, int> Lookup { get; set; }
 
         /* Indexers. */
         public RootNode<DataT> this[int index] => Nodes[index];
@@ -35,11 +35,19 @@ namespace Rusty.Graphs
             return str;
         }
 
+        public void InsertNode(int index, RootNode<DataT> node)
+        {
+            Nodes.Insert(index, node);
+            Lookup = null;
+            EnsureLookup();
+        }
+
         /// <summary>
         /// Check if this graph contains a node.
         /// </summary>
         public bool ContainsNode(RootNode<DataT> node)
         {
+            EnsureLookup();
             return Lookup.ContainsKey(node);
         }
 
@@ -48,6 +56,7 @@ namespace Rusty.Graphs
         /// </summary>
         public int IndexOfNode(RootNode<DataT> node)
         {
+            EnsureLookup();
             try
             {
                 return Lookup[node];
@@ -63,6 +72,8 @@ namespace Rusty.Graphs
         /// </summary>
         public RootNode<DataT> AddNode()
         {
+            EnsureLookup();
+
             // Create a node.
             RootNode<DataT> node = CreateNode(new());
 
@@ -81,6 +92,8 @@ namespace Rusty.Graphs
             if (node == null)
                 return;
 
+            EnsureLookup();
+
             // Remove the node from its old graph.
             node.Remove();
 
@@ -95,6 +108,8 @@ namespace Rusty.Graphs
         /// </summary>
         public void RemoveNode(RootNode<DataT> node)
         {
+            EnsureLookup();
+
             Lookup.Remove(node);
             Nodes.Remove(node);
             node.Graph = null;
@@ -106,6 +121,8 @@ namespace Rusty.Graphs
         /// </summary>
         public int[] FindStartNodes()
         {
+            EnsureLookup();
+
             // Initialize start nodes list and visited array.
             List<int> startNodes = new List<int>();
             bool[] visited = new bool[Count];
@@ -166,6 +183,18 @@ namespace Rusty.Graphs
         }
 
         /* Private methods. */
+        private void EnsureLookup()
+        {
+            if (Lookup != null)
+                return;
+
+            Lookup = new();
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                Lookup.Add(Nodes[i], i);
+            }
+        }
+
         /// <summary>
         /// Mark a node and recursively mark its successor nodes.
         /// </summary>
