@@ -115,16 +115,15 @@ namespace Rusty.Graphs
         }
 
         /// <summary>
-        /// Add an array of child nodes. This removes the sub-node(s) from their old parent(s).
+        /// Insert a child node. This removes the sub-node from its old parent.
         /// </summary>
-        public void AddChildren(SubNode<DataT>[] subNodes)
+        public void InsertChild(int index, SubNode<DataT> subNode)
         {
-            if (subNodes == null)
+            if (Children.Contains(subNode))
                 return;
-            for (int i = 0; i < subNodes.Length; i++)
-            {
-                AddChild(subNodes[i]);
-            }
+            subNode.Remove();
+            Children.Insert(index, subNode);
+            subNode.Parent = this;
         }
     }
 }
