@@ -33,7 +33,7 @@ public class RootNode : Node, IRootNode
         return Inputs[index];
     }
 
-    public IInputPort CreateInput()
+    public virtual IInputPort CreateInput()
     {
         InputPort input = new();
         AddInput(input);

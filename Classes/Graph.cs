@@ -12,8 +12,8 @@ public class Graph : IGraph
     public int NodeCount => Nodes.Count;
 
     /* Private properties. */
-    private List<RootNode> Nodes { get; } = new();
-    private Dictionary<RootNode, int> Lookup { get; set; }
+    private List<IRootNode> Nodes { get; } = new();
+    private Dictionary<IRootNode, int> Lookup { get; set; }
 
     /* Public methods. */
     public override string ToString()
@@ -27,7 +27,7 @@ public class Graph : IGraph
     public bool ContainsNode(IRootNode node)
     {
         EnsureLookup();
-        return Lookup.ContainsKey(node as RootNode);
+        return Lookup.ContainsKey(node);
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class Graph : IGraph
         EnsureLookup();
         try
         {
-            return Lookup[node as RootNode];
+            return Lookup[node];
         }
         catch
         {
@@ -57,7 +57,7 @@ public class Graph : IGraph
     /// <summary>
     /// Create a new node, add it to the graph, and return the node.
     /// </summary>
-    public IRootNode CreateNode()
+    public virtual IRootNode CreateNode()
     {
         // Create a node.
         RootNode node = new();
@@ -84,8 +84,8 @@ public class Graph : IGraph
         node.Remove();
 
         // Add the node to this graph.
-        Lookup.Add(node as RootNode, Nodes.Count);
-        Nodes.Add(node as RootNode);
+        Lookup.Add(node, Nodes.Count);
+        Nodes.Add(node);
         node.Graph = this;
     }
 
@@ -94,7 +94,7 @@ public class Graph : IGraph
     /// </summary>
     public void InsertNode(int index, IRootNode node)
     {
-        Nodes.Insert(index, node as RootNode);
+        Nodes.Insert(index, node);
         Lookup = null;
     }
 
@@ -105,8 +105,8 @@ public class Graph : IGraph
     {
         EnsureLookup();
 
-        Lookup.Remove(node as RootNode);
-        Nodes.Remove(node as RootNode);
+        Lookup.Remove(node);
+        Nodes.Remove(node);
         node.Graph = null;
         node.ClearInputs();
         node.ClearOutputs();

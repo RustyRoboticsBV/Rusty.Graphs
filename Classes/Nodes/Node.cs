@@ -32,7 +32,7 @@ public abstract class Node : INode
         return Children[index];
     }
 
-    public ISubNode CreateChild()
+    public virtual ISubNode CreateChild()
     {
         SubNode child = new();
         AddChild(child);
