@@ -1,4 +1,4 @@
-﻿ising System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Rusty.Graphs;
 
@@ -30,9 +30,9 @@ public static class StartNodeFinder
 
             // Check if this node has at least one precursor node.
             bool hasPrecursor = false;
-            for (int j = 0; j < node?.Inputs?.Count; j++)
+            for (int j = 0; j < node?.InputCount; j++)
             {
-                if (node.Inputs[j]?.From?.Node != null)
+                if (node.GetInputAt(j)?.From?.Node != null)
                 {
                     hasPrecursor = true;
                     break;
@@ -80,9 +80,9 @@ public static class StartNodeFinder
 
         // Mark successor nodes.
         IRootNode currentNode = graph.GetNodeAt(currentNodeIndex);
-        for (int i = 0; i < currentNode?.Outputs?.Count; i++)
+        for (int i = 0; i < currentNode?.OutputCount; i++)
         {
-            IRootNode toNode = currentNode?.Outputs[i]?.To?.Node;
+            IRootNode toNode = currentNode?.GetOutputAt(i)?.To?.Node;
             if (currentNode != null)
             {
                 int toIndex = graph.IndexOfNode(toNode);

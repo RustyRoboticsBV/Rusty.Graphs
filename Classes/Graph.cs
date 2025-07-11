@@ -1,146 +1,145 @@
 ﻿using System.Collections.Generic;
 
-namespace Rusty.Graphs
+namespace Rusty.Graphs;
+
+/// <summary>
+/// A generic graph.
+/// </summary>
+public class Graph : IGraph
 {
-    /// <summary>
-    /// A generic graph.
-    /// </summary>
-    public class Graph : IGraph
+    /* Public properties. */
+    public INodeData DefaultData { get; set; } = new NodeData();
+    public int NodeCount => Nodes.Count;
+
+    /* Private properties. */
+    private List<RootNode> Nodes { get; } = new();
+    private Dictionary<RootNode, int> Lookup { get; set; }
+
+    /* Public methods. */
+    public override string ToString()
     {
-        /* Public properties. */
-        public INodeData DefaultData { get; set; } = new NodeData();
-        public int NodeCount => Nodes.Count;
+        return Serializer.ToString(this);
+    }
 
-        /* Private properties. */
-        private List<RootNode> Nodes { get; } = new();
-        private Dictionary<RootNode, int> Lookup { get; set; }
+    /// <summary>
+    /// Check if this graph contains a node.
+    /// </summary>
+    public bool ContainsNode(IRootNode node)
+    {
+        EnsureLookup();
+        return Lookup.ContainsKey(node as RootNode);
+    }
 
-        /* Public methods. */
-        public override string ToString()
+    /// <summary>
+    /// Return the index of a node.
+    /// </summary>
+    public int IndexOfNode(IRootNode node)
+    {
+        EnsureLookup();
+        try
         {
-            return Serializer.ToString(this);
+            return Lookup[node as RootNode];
         }
-
-        /// <summary>
-        /// Check if this graph contains a node.
-        /// </summary>
-        public bool ContainsNode(IRootNode node)
+        catch
         {
-            EnsureLookup();
-            return Lookup.ContainsKey(node as RootNode);
+            return -1;
         }
+    }
 
-        /// <summary>
-        /// Return the index of a node.
-        /// </summary>
-        public int IndexOfNode(IRootNode node)
+    /// <summary>
+    /// Get a node from the graph, using its index.
+    /// </summary>
+    public IRootNode GetNodeAt(int index)
+    {
+        return Nodes[index];
+    }
+
+    /// <summary>
+    /// Create a new node, add it to the graph, and return the node.
+    /// </summary>
+    public IRootNode CreateNode()
+    {
+        // Create a node.
+        RootNode node = new();
+        node.Data = DefaultData.Copy();
+
+        // Add the node.
+        AddNode(node);
+
+        // Return the result.
+        return node;
+    }
+
+    /// <summary>
+    /// Add a node to this graph. This removes it from its old graph, if it was contained in one.
+    /// </summary>
+    public void AddNode(IRootNode node)
+    {
+        if (node == null)
+            return;
+
+        EnsureLookup();
+
+        // Remove the node from its old graph.
+        node.Remove();
+
+        // Add the node to this graph.
+        Lookup.Add(node as RootNode, Nodes.Count);
+        Nodes.Add(node as RootNode);
+        node.Graph = this;
+    }
+
+    /// <summary>
+    /// Insert a node into the graph.
+    /// </summary>
+    public void InsertNode(int index, IRootNode node)
+    {
+        Nodes.Insert(index, node as RootNode);
+        Lookup = null;
+    }
+
+    /// <summary>
+    /// Remove a node from the graph.
+    /// </summary>
+    public void RemoveNode(IRootNode node)
+    {
+        EnsureLookup();
+
+        Lookup.Remove(node as RootNode);
+        Nodes.Remove(node as RootNode);
+        node.Graph = null;
+        node.ClearInputs();
+        node.ClearOutputs();
+    }
+
+    /// <summary>
+    /// Remove all nodes from the graph.
+    /// </summary>
+    public void ClearNodes()
+    {
+        Nodes.Clear();
+        Lookup = null;
+    }
+
+    /// <summary>
+    /// Find and return the indices of all start nodes in the graph. This will include all nodes without a precursor. Cycles
+    /// with no clear start node will arbitrarily get one of their nodes marked as a start node.
+    /// </summary>
+    public int[] FindStartNodes()
+    {
+        return StartNodeFinder.FindStartNodes(this);
+    }
+
+    /* Private methods. */
+    private void EnsureLookup()
+    {
+        if (Lookup != null)
+            return;
+
+        Lookup = new();
+        for (int i = 0; i < Nodes.Count; i++)
         {
-            EnsureLookup();
-            try
-            {
-                return Lookup[node as RootNode];
-            }
-            catch
-            {
-                return -1;
-            }
-        }
-
-        /// <summary>
-        /// Get a node from the graph, using its index.
-        /// </summary>
-        public IRootNode GetNodeAt(int index)
-        {
-            return Nodes[index];
-        }
-
-        /// <summary>
-        /// Create a new node, add it to the graph, and return the node.
-        /// </summary>
-        public IRootNode CreateNode()
-        {
-            // Create a node.
-            RootNode node = new();
-            node.Data = DefaultData.Copy();
-
-            // Add the node.
-            AddNode(node);
-
-            // Return the result.
-            return node;
-        }
-
-        /// <summary>
-        /// Add a node to this graph. This removes it from its old graph, if it was contained in one.
-        /// </summary>
-        public void AddNode(IRootNode node)
-        {
-            if (node == null)
-                return;
-
-            EnsureLookup();
-
-            // Remove the node from its old graph.
-            node.Remove();
-
-            // Add the node to this graph.
-            Lookup.Add(node as RootNode, Nodes.Count);
-            Nodes.Add(node as RootNode);
-            node.Graph = this;
-        }
-
-        /// <summary>
-        /// Insert a node into the graph.
-        /// </summary>
-        public void InsertNode(int index, IRootNode node)
-        {
-            Nodes.Insert(index, node as RootNode);
-            Lookup = null;
-        }
-
-        /// <summary>
-        /// Remove a node from the graph.
-        /// </summary>
-        public void RemoveNode(IRootNode node)
-        {
-            EnsureLookup();
-
-            Lookup.Remove(node as RootNode);
-            Nodes.Remove(node as RootNode);
-            node.Graph = null;
-            node.ClearInputs();
-            node.ClearOutputs();
-        }
-
-        /// <summary>
-        /// Remove all nodes from the graph.
-        /// </summary>
-        public void ClearNodes()
-        {
-            Nodes.Clear();
-            Lookup = null;
-        }
-
-        /// <summary>
-        /// Find and return the indices of all start nodes in the graph. This will include all nodes without a precursor. Cycles
-        /// with no clear start node will arbitrarily get one of their nodes marked as a start node.
-        /// </summary>
-        public int[] FindStartNodes()
-        {
-            return StartNodeFinder.FindStartNodes(this);
-        }
-
-        /* Private methods. */
-        private void EnsureLookup()
-        {
-            if (Lookup != null)
-                return;
-
-            Lookup = new();
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                Lookup.Add(Nodes[i], i);
-            }
+            Lookup.Add(Nodes[i], i);
         }
     }
 }
