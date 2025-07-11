@@ -1,19 +1,13 @@
 ﻿namespace Rusty.Graphs
 {
     /// <summary>
-    /// A block of data that can be stored inside of a graph, a root node or a sub-node.
+    /// A block of data that can be stored inside graph node.
     /// </summary>
-    public abstract class NodeData
+    public class NodeData : INodeData
     {
-        /* Public methods. */
-        public sealed override string ToString()
+        public virtual INodeData Copy()
         {
-            return GetName();
+            return new NodeData();
         }
-
-        /// <summary>
-        /// Convert the node data object to a node name.
-        /// </summary>
-        public abstract string GetName();
     }
 }

@@ -3,63 +3,42 @@
 namespace Rusty.Graphs
 {
     /// <summary>
-    /// A container for nodes.
+    /// A generic graph.
     /// </summary>
-    public class Graph<DataT> where DataT : NodeData, new()
+    public class Graph : IGraph
     {
         /* Public properties. */
-        public DataT Data { get; set; } = new();
-        public int Count => Nodes.Count;
+        public INodeData DefaultData { get; set; } = new NodeData();
+        public int NodeCount => Nodes.Count;
 
         /* Private properties. */
-        private List<RootNode<DataT>> Nodes { get; } = new();
-        private Dictionary<RootNode<DataT>, int> Lookup { get; set; }
-
-        /* Indexers. */
-        public RootNode<DataT> this[int index] => Nodes[index];
+        private List<RootNode> Nodes { get; } = new();
+        private Dictionary<RootNode, int> Lookup { get; set; }
 
         /* Public methods. */
         public override string ToString()
         {
-            string str = "";
-            int[] startNodes = FindStartNodes();
-            HashSet<Node<DataT>> handled = new();
-            for (int i = 0; i < startNodes.Length; i++)
-            {
-                int nodeIndex = startNodes[i];
-                if (str != "")
-                    str += '\n';
-                if (!handled.Contains(Nodes[nodeIndex]))
-                    str += Nodes[nodeIndex].ToString(handled, true);
-            }
-            return str;
-        }
-
-        public void InsertNode(int index, RootNode<DataT> node)
-        {
-            Nodes.Insert(index, node);
-            Lookup = null;
-            EnsureLookup();
+            return Serializer.ToString(this);
         }
 
         /// <summary>
         /// Check if this graph contains a node.
         /// </summary>
-        public bool ContainsNode(RootNode<DataT> node)
+        public bool ContainsNode(IRootNode node)
         {
             EnsureLookup();
-            return Lookup.ContainsKey(node);
+            return Lookup.ContainsKey(node as RootNode);
         }
 
         /// <summary>
         /// Return the index of a node.
         /// </summary>
-        public int IndexOfNode(RootNode<DataT> node)
+        public int IndexOfNode(IRootNode node)
         {
             EnsureLookup();
             try
             {
-                return Lookup[node];
+                return Lookup[node as RootNode];
             }
             catch
             {
@@ -68,14 +47,21 @@ namespace Rusty.Graphs
         }
 
         /// <summary>
+        /// Get a node from the graph, using its index.
+        /// </summary>
+        public IRootNode GetNodeAt(int index)
+        {
+            return Nodes[index];
+        }
+
+        /// <summary>
         /// Create a new node, add it to the graph, and return the node.
         /// </summary>
-        public RootNode<DataT> AddNode()
+        public IRootNode CreateNode()
         {
-            EnsureLookup();
-
             // Create a node.
-            RootNode<DataT> node = CreateNode(new());
+            RootNode node = new();
+            node.Data = DefaultData.Copy();
 
             // Add the node.
             AddNode(node);
@@ -87,7 +73,7 @@ namespace Rusty.Graphs
         /// <summary>
         /// Add a node to this graph. This removes it from its old graph, if it was contained in one.
         /// </summary>
-        public void AddNode(RootNode<DataT> node)
+        public void AddNode(IRootNode node)
         {
             if (node == null)
                 return;
@@ -98,21 +84,41 @@ namespace Rusty.Graphs
             node.Remove();
 
             // Add the node to this graph.
-            Lookup.Add(node, Nodes.Count);
-            Nodes.Add(node);
+            Lookup.Add(node as RootNode, Nodes.Count);
+            Nodes.Add(node as RootNode);
             node.Graph = this;
+        }
+
+        /// <summary>
+        /// Insert a node into the graph.
+        /// </summary>
+        public void InsertNode(int index, IRootNode node)
+        {
+            Nodes.Insert(index, node as RootNode);
+            Lookup = null;
         }
 
         /// <summary>
         /// Remove a node from the graph.
         /// </summary>
-        public void RemoveNode(RootNode<DataT> node)
+        public void RemoveNode(IRootNode node)
         {
             EnsureLookup();
 
-            Lookup.Remove(node);
-            Nodes.Remove(node);
+            Lookup.Remove(node as RootNode);
+            Nodes.Remove(node as RootNode);
             node.Graph = null;
+            node.ClearInputs();
+            node.ClearOutputs();
+        }
+
+        /// <summary>
+        /// Remove all nodes from the graph.
+        /// </summary>
+        public void ClearNodes()
+        {
+            Nodes.Clear();
+            Lookup = null;
         }
 
         /// <summary>
@@ -121,65 +127,7 @@ namespace Rusty.Graphs
         /// </summary>
         public int[] FindStartNodes()
         {
-            EnsureLookup();
-
-            // Initialize start nodes list and visited array.
-            List<int> startNodes = new List<int>();
-            bool[] visited = new bool[Count];
-
-            // Find non-cycle start nodes.
-            for (int i = 0; i < Count; i++)
-            {
-                RootNode<DataT> node = Nodes[i];
-
-                // Check if this node has at least one precursor node.
-                bool hasPrecursor = false;
-                for (int j = 0; j < node.Inputs.Count; j++)
-                {
-                    if (node.Inputs[j].FromNode != null)
-                    {
-                        hasPrecursor = true;
-                        break;
-                    }
-                }
-
-                // If we had no precursors, we are a start node.
-                if (!hasPrecursor)
-                {
-                    // Add to start nodes.
-                    startNodes.Add(i);
-
-                    // Recursively mark this and all succursor nodes as "visited".
-                    MarkSubgraphAsVisited(visited, i);
-                }
-            }
-
-            // All non-visited nodes start in a cycle with no clear start node.
-            // Mark the lowest-index ones of each cycle.
-            for (int i = 0; i < Count; i++)
-            {
-                // If this node hasn't been visited yet, it is a start node.
-                if (!visited[i])
-                {
-                    // Add to start nodes.
-                    startNodes.Add(i);
-
-                    // Recursively mark this and all succursor nodes as "visited".
-                    MarkSubgraphAsVisited(visited, i);
-                }
-            }
-
-            // Return found start nodes.
-            return startNodes.ToArray();
-        }
-
-        /* Protected methods. */
-        /// <summary>
-        /// Create a new root node.
-        /// </summary>
-        protected virtual RootNode<DataT> CreateNode(DataT data)
-        {
-            return new RootNode<DataT>(data);
+            return StartNodeFinder.FindStartNodes(this);
         }
 
         /* Private methods. */
@@ -192,28 +140,6 @@ namespace Rusty.Graphs
             for (int i = 0; i < Nodes.Count; i++)
             {
                 Lookup.Add(Nodes[i], i);
-            }
-        }
-
-        /// <summary>
-        /// Mark a node and recursively mark its successor nodes.
-        /// </summary>
-        private void MarkSubgraphAsVisited(bool[] visited, int currentNodeIndex)
-        {
-            // Mark as visited.
-            visited[currentNodeIndex] = true;
-
-            // Mark successor nodes.
-            RootNode<DataT> currentNode = Nodes[currentNodeIndex];
-            for (int i = 0; i < currentNode.Outputs.Count; i++)
-            {
-                RootNode<DataT> toNode = currentNode.Outputs[i].ToNode;
-                if (currentNode != null)
-                {
-                    int toIndex = IndexOfNode(toNode);
-                    if (toIndex != -1 && !visited[toIndex])
-                        MarkSubgraphAsVisited(visited, toIndex);
-                }
             }
         }
     }

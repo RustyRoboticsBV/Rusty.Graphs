@@ -3,12 +3,10 @@
     /// <summary>
     /// A top-level node. Can have inputs and outputs, and can contain sub-nodes.
     /// </summary>
-    public abstract class Port<DataT>
-        where DataT : NodeData, new()
+    public abstract class Port : IPort
     {
         /* Public properties. */
-        public string Name { get; set; }
-        public RootNode<DataT> Owner { get; internal set; }
+        public IRootNode Node { get; set; }
 
         /* Constructors. */
         public Port() { }
