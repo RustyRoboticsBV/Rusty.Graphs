@@ -30,6 +30,12 @@ public class SubNode : Node, ISubNode
     }
 
     /* Public methods. */
+    public override string ToString()
+    {
+        return Serializer.ToString(this);
+    }
+
+
     public override void Remove()
     {
         if (Parent != null && Parent.ContainsChild(this))

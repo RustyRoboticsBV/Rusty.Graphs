@@ -90,28 +90,28 @@ public static class Serializer
             return str;
 
         // Add title line.
-        if (node.Children.Count > 0)
+        if (node.ChildCount > 0)
             str = str.Insert(width * 2 + 6, '├' + new string('─', width) + '┤' + '\n');
 
         // Handle outputs.
         if (includeOutputs)
         {
             // Add bottom connector.
-            if (node.Outputs.Count > 0)
+            if (node.OutputCount > 0)
                 str = str.Replace("└─", "└┬");
 
             // Alter output of output node to connect and indent it.
-            for (int i = 0; i < node.Outputs.Count; i++)
+            for (int i = 0; i < node.OutputCount; i++)
             {
-                IInputPort to = node.Outputs[i].To;
+                IInputPort to = node.GetOutputAt(i).To;
                 string childStr = "";
                 if (to == null || to.Node == null)
                     childStr = "(null)";
                 else
-                    childStr = ToString(node.Outputs[i].To.Node, examined, true);
+                    childStr = ToString(node.GetOutputAt(i).To.Node, examined, true);
 
                 childStr = " │" + childStr.Replace("\n", "\n  ");
-                if (i < node.Outputs.Count - 1)
+                if (i < node.OutputCount - 1)
                 {
                     childStr = ReplaceFirst(childStr, "\n  │", "\n ├┤");
                     childStr = childStr.Replace("\n  ", "\n │");
@@ -140,11 +140,11 @@ public static class Serializer
         string str = node.Data.ToString();
 
         // Stringify children.
-        for (int i = 0; i < node.Children.Count; i++)
+        for (int i = 0; i < node.ChildCount; i++)
         {
-            string childStr = ToString(node.Children[i], examined);
+            string childStr = ToString(node.GetChildAt(i), examined);
 
-            if (i == node.Children.Count - 1)
+            if (i == node.ChildCount - 1)
             {
                 childStr = '└' + childStr;
                 childStr = childStr.Replace("\n", "\n ");

@@ -18,6 +18,12 @@ public class RootNode : Node, IRootNode
     private List<IOutputPort> Outputs { get; } = new();
 
     /* Public methods. */
+    public override string ToString()
+    {
+        return Serializer.ToString(this);
+    }
+
+
     public bool ContainsInput(IInputPort input)
     {
         return Inputs.Contains(input);
