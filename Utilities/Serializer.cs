@@ -57,7 +57,8 @@ public static class Serializer
         bool examinedAlready = examined.Contains(node);
         if (examinedAlready)
         {
-            str = $"({node.Data}...)";
+            string data = node.Data != null ? node.Data.ToString() : "";
+            str = $"({data}...)";
             width = str.Length;
         }
 
@@ -131,13 +132,15 @@ public static class Serializer
     /// </summary>
     private static string ToString(INode node, HashSet<INode> examined)
     {
+        string data = node.Data != null ? node.Data.ToString() : "";
+
         // Detect cycles.
         if (examined.Contains(node))
-            return $"({node.Data}...)";
+            return $"({data}...)";
         examined.Add(node);
 
         // Stringify this node.
-        string str = node.Data.ToString();
+        string str = data;
 
         // Stringify children.
         for (int i = 0; i < node.ChildCount; i++)
