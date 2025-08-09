@@ -104,6 +104,7 @@ public abstract class Node : INode
     private static ISubNode ConvertToChild(INode node)
     {
         SubNode child = new();
+        child.Data = node.Data.Copy();
         child.StealChildren(node);
         node.Remove();
         return child;
