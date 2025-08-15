@@ -39,24 +39,48 @@ public abstract class Node : INode
         return child;
     }
 
-    public void AddChild(INode node)
+    public void AddChild(ISubNode node)
     {
-        ISubNode child = ConvertToChild(node);
-        Children.Add(child);
-        child.Parent = this;
+        node.Remove();
+        Children.Add(node);
+        node.Parent = this;
     }
 
-    public void InsertChild(int index, INode node)
+    public ISubNode AddChild(IRootNode node)
     {
-        ISubNode child = ConvertToChild(node);
-        Children.Insert(index, child);
-        child.Parent = this;
+        node.Remove();
+
+        ISubNode child = node.ToChild();
+        AddChild(child);
+        child.StealChildren(node);
+        return child;
     }
 
-    public void ReplaceChild(ISubNode oldChild, INode newChild)
+    public void InsertChild(int index, ISubNode node)
+    {
+        AddChild(node);
+        MoveChild(node, index);
+    }
+
+    public ISubNode InsertChild(int index, IRootNode node)
+    {
+        ISubNode child = AddChild(node);
+        MoveChild(child, index);
+        return child;
+    }
+
+    public void ReplaceChild(ISubNode oldChild, ISubNode newChild)
     {
         InsertChild(GetChildIndex(oldChild), newChild);
         RemoveChild(oldChild);
+    }
+
+    public ISubNode ReplaceChild(ISubNode oldChild, IRootNode newChild)
+    {
+        int index = GetChildIndex(oldChild);
+        ISubNode child = InsertChild(index, newChild);
+        RemoveChild(oldChild);
+        return child;
     }
 
     public void MoveChild(ISubNode child, int toIndex)
@@ -65,10 +89,12 @@ public abstract class Node : INode
             return;
 
         int fromIndex = GetChildIndex(child);
-        RemoveChild(child);
-        if (toIndex > fromIndex)
+        Children.RemoveAt(fromIndex);
+
+        if (fromIndex < toIndex)
             toIndex--;
-        InsertChild(toIndex, child);
+
+        Children.Insert(toIndex, child);
     }
 
     public void RemoveChild(ISubNode child)
@@ -95,18 +121,4 @@ public abstract class Node : INode
     public abstract void Remove();
 
     public abstract void Dissolve();
-
-    /* Private methods. */
-    /// <summary>
-    /// If a root-node, delete it and transfer its children to a new sub-node.
-    /// Else, remove it from its parent and return the node as-is.
-    /// </summary>
-    private static ISubNode ConvertToChild(INode node)
-    {
-        SubNode child = new();
-        child.Data = node.Data.Copy();
-        child.StealChildren(node);
-        node.Remove();
-        return child;
-    }
 }

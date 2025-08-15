@@ -122,6 +122,13 @@ public class RootNode : Node, IRootNode
     }
 
 
+    public virtual ISubNode ToChild()
+    {
+        SubNode child = new();
+        child.Data = Data.Copy();
+        return child;
+    }
+
 
     public override void Remove()
     {

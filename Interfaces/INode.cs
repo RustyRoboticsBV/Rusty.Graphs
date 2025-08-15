@@ -39,15 +39,30 @@ public interface INode
     /// <summary>
     /// Add a child node. This removes the node from its old parent, if it had one.
     /// </summary>
-    public void AddChild(INode node);
+    public void AddChild(ISubNode node);
+    /// <summary>
+    /// Convert a root node into a child node, transfer its children to the copy, and make it a child of this node. This removes
+    /// the old root node from the graph it was on.
+    /// </summary>
+    public ISubNode AddChild(IRootNode node);
     /// <summary>
     /// Insert a child node. This removes the node from its old parent, if it had one.
     /// </summary>
-    public void InsertChild(int index, INode node);
+    public void InsertChild(int index, ISubNode node);
     /// <summary>
-    /// Replace a child node.
+    /// Convert a root node into a child node, transfer its children to the copy, and make it a child of this node via
+    /// insertion. This removes the old root node from the graph it was on.
     /// </summary>
-    public void ReplaceChild(ISubNode oldChild, INode newChild);
+    public ISubNode InsertChild(int index, IRootNode node);
+    /// <summary>
+    /// Replace a child node. This removes the new child from its old parent, if it had one.
+    /// </summary>
+    public void ReplaceChild(ISubNode oldChild, ISubNode newChild);
+    /// <summary>
+    /// Convert a root node into a child node, transfer its children to the copy, and replace one of our child node with the
+    /// copy. This removes the old root node from the graph it was on.
+    /// </summary>
+    public ISubNode ReplaceChild(ISubNode oldChild, IRootNode newChild);
     /// <summary>
     /// Move a child node to a new index.
     /// </summary>

@@ -40,6 +40,7 @@ public class SubNode : Node, ISubNode
     {
         if (Parent != null && Parent.ContainsChild(this))
             Parent.RemoveChild(this);
+        Parent = null;
     }
 
     public override void Dissolve()

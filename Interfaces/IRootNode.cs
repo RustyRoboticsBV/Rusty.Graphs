@@ -82,4 +82,9 @@ public interface IRootNode : INode
     /// Disconnect and remove all outputs.
     /// </summary>
     public void ClearOutputs();
+
+    /// <summary>
+    /// Create a sub-node that contains a copy of this root node's data. This does NOT copy child nodes, inputs or outputs.
+    /// </summary>
+    public ISubNode ToChild();
 }
