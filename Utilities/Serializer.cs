@@ -15,14 +15,16 @@ public static class Serializer
     public static string ToString(IGraph graph)
     {
         string str = "";
+        int[] startNodes = StartNodeFinder.FindStartNodes(graph);
         HashSet<INode> examined = new();
-        for (int i = 0; i < graph.NodeCount; i++)
+        for (int i = 0; i < startNodes.Length; i++)
         {
-            if (!examined.Contains(graph.GetNodeAt(i)))
+            IRootNode startNode = graph.GetNodeAt(startNodes[i]);
+            if (!examined.Contains(startNode))
             {
                 if (str != "")
                     str += "\n";
-                str += ToString(graph.GetNodeAt(i), examined, true);
+                str += ToString(startNode, examined, true);
             }
         }
         return str;
