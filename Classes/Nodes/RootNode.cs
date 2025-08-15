@@ -73,14 +73,14 @@ public class RootNode : Node, IRootNode
     }
 
 
-    public bool ContainsOutput(IOutputPort input)
+    public bool ContainsOutput(IOutputPort output)
     {
-        return Outputs.Contains(input);
+        return Outputs.Contains(output);
     }
 
-    public int GetOutputIndex(IOutputPort input)
+    public int GetOutputIndex(IOutputPort output)
     {
-        return Outputs.IndexOf(input);
+        return Outputs.IndexOf(output);
     }
 
     public IOutputPort GetOutputAt(int index)
@@ -88,29 +88,29 @@ public class RootNode : Node, IRootNode
         return Outputs[index];
     }
 
-    public IOutputPort CreateOutput()
+    public virtual IOutputPort CreateOutput()
     {
-        OutputPort input = new();
-        AddOutput(input);
-        return input;
+        OutputPort output = new();
+        AddOutput(output);
+        return output;
     }
 
-    public void AddOutput(IOutputPort input)
+    public void AddOutput(IOutputPort output)
     {
-        Outputs.Add(input);
-        input.Node = this;
+        Outputs.Add(output);
+        output.Node = this;
     }
 
-    public void InsertOutput(int index, IOutputPort input)
+    public void InsertOutput(int index, IOutputPort output)
     {
-        Outputs.Insert(index, input);
-        input.Node = this;
+        Outputs.Insert(index, output);
+        output.Node = this;
     }
 
-    public void RemoveOutput(IOutputPort input)
+    public void RemoveOutput(IOutputPort output)
     {
-        Outputs.Remove(input);
-        input.Node = null;
+        Outputs.Remove(output);
+        output.Node = null;
     }
 
     public void ClearOutputs()
