@@ -6,7 +6,7 @@
 public class OutputPort : Port, IOutputPort
 {
     /* Public properties. */
-    public IInputPort To { get; set; }
+    public virtual IInputPort To { get; set; }
 
     /* Public methods. */
     public sealed override void Remove()

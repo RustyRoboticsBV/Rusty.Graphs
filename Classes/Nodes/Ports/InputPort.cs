@@ -9,7 +9,7 @@ public class InputPort : Port, IInputPort
     /// <summary>
     /// The source output port that this input is connected to.
     /// </summary>
-    public IOutputPort From { get; set; }
+    public virtual IOutputPort From { get; set; }
 
     /* Constructors. */
     public InputPort() : base() { }

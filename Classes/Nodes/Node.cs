@@ -27,7 +27,7 @@ public abstract class Node : INode
         return Children.IndexOf(child);
     }
 
-    public ISubNode GetChildAt(int index)
+    public virtual ISubNode GetChildAt(int index)
     {
         return Children[index];
     }
@@ -46,7 +46,7 @@ public abstract class Node : INode
         node.Parent = this;
     }
 
-    public ISubNode AddChild(IRootNode node)
+    public virtual ISubNode AddChild(IRootNode node)
     {
         node.Remove();
 
@@ -62,7 +62,7 @@ public abstract class Node : INode
         MoveChild(node, index);
     }
 
-    public ISubNode InsertChild(int index, IRootNode node)
+    public virtual ISubNode InsertChild(int index, IRootNode node)
     {
         ISubNode child = AddChild(node);
         MoveChild(child, index);
@@ -75,7 +75,7 @@ public abstract class Node : INode
         RemoveChild(oldChild);
     }
 
-    public ISubNode ReplaceChild(ISubNode oldChild, IRootNode newChild)
+    public virtual ISubNode ReplaceChild(ISubNode oldChild, IRootNode newChild)
     {
         int index = GetChildIndex(oldChild);
         ISubNode child = InsertChild(index, newChild);

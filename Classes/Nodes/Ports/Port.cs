@@ -6,7 +6,7 @@
 public abstract class Port : IPort
 {
     /* Public properties. */
-    public IRootNode Node { get; set; }
+    public virtual IRootNode Node { get; set; }
 
     /* Constructors. */
     public Port() { }

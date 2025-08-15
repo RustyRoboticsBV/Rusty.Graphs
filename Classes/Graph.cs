@@ -49,7 +49,7 @@ public class Graph : IGraph
     /// <summary>
     /// Get a node from the graph, using its index.
     /// </summary>
-    public IRootNode GetNodeAt(int index)
+    public virtual IRootNode GetNodeAt(int index)
     {
         return Nodes[index];
     }
@@ -103,13 +103,11 @@ public class Graph : IGraph
     /// </summary>
     public void RemoveNode(IRootNode node)
     {
-        EnsureLookup();
-
-        Lookup.Remove(node);
         Nodes.Remove(node);
         node.Graph = null;
         node.ClearInputs();
         node.ClearOutputs();
+        Lookup = null;
     }
 
     /// <summary>

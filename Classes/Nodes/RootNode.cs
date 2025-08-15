@@ -34,7 +34,7 @@ public class RootNode : Node, IRootNode
         return Inputs.IndexOf(input);
     }
 
-    public IInputPort GetInputAt(int index)
+    public virtual IInputPort GetInputAt(int index)
     {
         return Inputs[index];
     }
@@ -62,6 +62,7 @@ public class RootNode : Node, IRootNode
     {
         Inputs.Remove(input);
         input.Node = null;
+        input.Disconnect();
     }
 
     public void ClearInputs()
@@ -83,7 +84,7 @@ public class RootNode : Node, IRootNode
         return Outputs.IndexOf(output);
     }
 
-    public IOutputPort GetOutputAt(int index)
+    public virtual IOutputPort GetOutputAt(int index)
     {
         return Outputs[index];
     }
@@ -111,6 +112,7 @@ public class RootNode : Node, IRootNode
     {
         Outputs.Remove(output);
         output.Node = null;
+        output.Disconnect();
     }
 
     public void ClearOutputs()
